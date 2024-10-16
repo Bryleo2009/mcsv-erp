@@ -25,8 +25,8 @@ public class UsuarioDao implements IUsuarioService {
     }
 
     @Override
-    public void deleteUsuario(Usuario usuario) {
-        repo.delete(usuario);
+    public void deleteUsuario(Integer id) {
+        repo.deleteById(id);
     }
 
     @Override

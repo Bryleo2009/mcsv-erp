@@ -27,7 +27,7 @@ public class UsuarioController {
 
     @DeleteMapping
     public ResponseEntity<?> deleteUsuario(@RequestBody Usuario request) {
-        usuarioDao.deleteUsuario(request);
+        usuarioDao.deleteUsuario(request.getId());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

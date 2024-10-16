@@ -7,7 +7,7 @@ import java.util.List;
 public interface IUsuarioService {
     Usuario saveUsuario(Usuario usuario);
     Usuario updateUsuario(Usuario usuario);
-    void deleteUsuario(Usuario usuario);
+    void deleteUsuario(Integer id);
     Usuario getUsuario(int id);
     Usuario getUsuarioByEmail(String email);
     List<Usuario> getAllUsuarios();
