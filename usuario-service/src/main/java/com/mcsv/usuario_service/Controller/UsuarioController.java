@@ -3,6 +3,7 @@ package com.mcsv.usuario_service.Controller;
 import com.mcsv.usuario_service.Dao.UsuarioDao;
 import com.mcsv.usuario_service.Model.Usuario;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -46,7 +47,8 @@ public class UsuarioController {
     }
 
     @GetMapping("/{id}")
-    @CircuitBreaker(name = "ratingUsuarioBraker", fallbackMethod = "ratingUsuarioFallback")
+    //@CircuitBreaker(name = "ratingUsuarioBraker", fallbackMethod = "ratingUsuarioFallback") //en caso de que el servicio falle
+    @Retry(name = "ratingUsuarioBraker" , fallbackMethod = "ratingUsuarioFallback") //para reintentar la peticion n veces
     public ResponseEntity<?> getUsuario(@PathVariable int id) {
         Usuario usuario = usuarioDao.getUsuario(id); // Lógica para obtener el usuario
         return new ResponseEntity<>(usuario, HttpStatus.OK); // Respuesta exitosa

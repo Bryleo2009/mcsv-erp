@@ -51,3 +51,9 @@ resilience4j:
         wait-duration-in-open-state:
           seconds: 6 # Tiempo de espera en estado abierto
         permitted-number-of-calls-in-half-open-state: 3 # Cantidad de llamadas permitidas en estado semiabierto
+
+  retry:
+    instances:
+      ratingUsuarioBraker:
+        max-attempts: 3 # Cantidad de reintentos
+        wait-duration: 5s # Tiempo de espera entre reintentos
