@@ -3,6 +3,7 @@ package com.mcsv.calificacion_service.Controller;
 import com.mcsv.calificacion_service.Dao.CalificacionDao;
 import com.mcsv.calificacion_service.Model.Calificacion;
 import com.mcsv.calificacion_service.Service.ICalificacionService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/calificacion")
+@Slf4j
 public class CalificacionController {
     @Autowired
     private CalificacionDao calificacionDao;

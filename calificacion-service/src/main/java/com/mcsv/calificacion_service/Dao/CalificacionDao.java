@@ -4,11 +4,15 @@ import com.mcsv.calificacion_service.Config.Exception.ModeloNotFoundException;
 import com.mcsv.calificacion_service.Model.Calificacion;
 import com.mcsv.calificacion_service.Repo.ICalificacionRepo;
 import com.mcsv.calificacion_service.Service.ICalificacionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class CalificacionDao implements ICalificacionService {
@@ -32,22 +36,15 @@ public class CalificacionDao implements ICalificacionService {
     }
 
     @Override
-    public Calificacion getCalificacionByIdHotel(int idHotel) {
-        Calificacion calificacion = repo.findByIdHotel(idHotel);
-        if (Objects.isNull(calificacion)) {
-            throw new ModeloNotFoundException("Calificacion no encontrada para el hotel con id: " + idHotel);
-        }
-        return calificacion;
+    public List<Calificacion> getCalificacionByIdHotel(int idHotel) {
+        return Optional.ofNullable(repo.findByIdHotel(idHotel)).orElseGet(ArrayList::new);
     }
 
     @Override
-    public Calificacion getCalificacionByIdUsuario(int idUsuario) {
-        Calificacion calificacion = repo.findByIdUsuario(idUsuario);
-        if (Objects.isNull(calificacion)) {
-            throw new ModeloNotFoundException("Calificacion no encontrada para el usuario con id: " + idUsuario);
-        }
-        return calificacion;
+    public List<Calificacion> getCalificacionByIdUsuario(int idUsuario) {
+        return Optional.ofNullable(repo.findByIdUsuario(idUsuario)).orElseGet(ArrayList::new);
     }
+
 
     @Override
     public void deleteCalificacion(String id) {
