@@ -14,3 +14,14 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+  application:
+    name: usuario-service
+
+eureka:
+  instance:
+    prefer-ip-address: true # Para que el servicio se registre con la IP en lugar del nombre del host
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
