@@ -24,3 +24,30 @@ spring:
 logging:
     level:
         com.mcsv.usuario_service: DEBUG
+
+management:
+  health:
+    circuitbreakers: # Habilitar el endpoint de circuit breaker
+      enabled: true
+    endpoints: # Habilitar el endpoint de health
+      web:
+        exposure:
+          include: health
+    enpoint: # Habilitar el endpoint de info
+      health:
+        show-details: always
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      ratingUsuarioBraker:
+        registerHealthIndicator: true # Indicar el estado del circuit breaker
+        event-consumer-buffer-size: 10 # Tamaño del buffer de eventos
+        failure-rate-threshold: 50 # Porcentaje de fallos
+        minimum-number-of-calls: 5 # Minima cantidad de llamadas
+        sliding-window-size: 10 # Maxima cantidad de repeticiones
+        sliding-window-type: COUNT_BASED # Tipo de ventana
+        automatic-transition-from-open-to-half-open-enabled: true # Transición automática de abierto a semiabierto
+        wait-duration-in-open-state:
+          seconds: 6 # Tiempo de espera en estado abierto
+        permitted-number-of-calls-in-half-open-state: 3 # Cantidad de llamadas permitidas en estado semiabierto

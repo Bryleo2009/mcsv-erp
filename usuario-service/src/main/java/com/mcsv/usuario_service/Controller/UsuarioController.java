@@ -2,6 +2,8 @@ package com.mcsv.usuario_service.Controller;
 
 import com.mcsv.usuario_service.Dao.UsuarioDao;
 import com.mcsv.usuario_service.Model.Usuario;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/usuario")
+@Slf4j
 public class UsuarioController {
     @Autowired
     private UsuarioDao usuarioDao;
@@ -31,12 +34,6 @@ public class UsuarioController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getUsuario(@PathVariable int id) {
-        Usuario usuario = usuarioDao.getUsuario(id);
-        return new ResponseEntity<>(usuario, HttpStatus.OK);
-    }
-
     @GetMapping("/email/{email}")
     public ResponseEntity<?> getUsuarioByEmail(@PathVariable String email) {
         Usuario usuario = usuarioDao.getUsuarioByEmail(email);
@@ -47,4 +44,18 @@ public class UsuarioController {
     public ResponseEntity<?> getAllUsuarios() {
         return new ResponseEntity<>(usuarioDao.getAllUsuarios(), HttpStatus.OK);
     }
+
+    @GetMapping("/{id}")
+    @CircuitBreaker(name = "ratingUsuarioBraker", fallbackMethod = "ratingUsuarioFallback")
+    public ResponseEntity<?> getUsuario(@PathVariable int id) {
+        Usuario usuario = usuarioDao.getUsuario(id); // Lógica para obtener el usuario
+        return new ResponseEntity<>(usuario, HttpStatus.OK); // Respuesta exitosa
+    }
+
+    public ResponseEntity<?> ratingUsuarioFallback(int usuarioId, Throwable throwable) {
+        log.warn("Respaldo activado por falla en el servicio"); // Mensaje de advertencia
+        Usuario usuario = new Usuario(); // Crear un objeto vacío
+        return new ResponseEntity<>(usuario, HttpStatus.SERVICE_UNAVAILABLE); // Devolver respuesta de servicio no disponible
+    }
+
 }

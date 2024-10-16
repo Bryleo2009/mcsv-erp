@@ -12,8 +12,13 @@ spring:
 
   config:
     import: configserver:http://localhost:8085 # Config Server URL
+    # sino quiero que traiga la configuracion de un servidor de configuracion
+    # enable: false
+    # import: optional:configserver:instead
   profiles:
     active: prod # Profile
+
+
 
 logging:
   level:
