@@ -11,15 +11,21 @@ spring:
         - id: USUARIO-SERVICE
           uri: lb://USUARIO-SERVICE
           predicates:
-            - Path=/usuario/**
+            - Path=/api/usuario/**
+          filters:
+            - StripPrefix=1  # Esto elimina el prefijo /api/ antes de la solicitud al servicio
         - id: HOTEL-SERVICE
           uri: lb://HOTEL-SERVICE
           predicates:
-            - Path=/hotel/** #,/otra-ruta/**
+            - Path=/api/hotel/** #,/otra-ruta/**
+          filters:
+            - StripPrefix=1  # Esto elimina el prefijo /api/ antes de la solicitud al servicio
         - id: CALIFICACION-SERVICE
           uri: lb://CALIFICACION-SERVICE
           predicates:
-            - Path=/calificacion/**
+            - Path=/api/calificacion/**
+          filters:
+            - StripPrefix=1  # Esto elimina el prefijo /api/ antes de la solicitud al servicio
 
 
 eureka:
