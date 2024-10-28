@@ -2,8 +2,16 @@ server:
   port: 8084
 
 spring:
+  main:
+    web-application-type: reactive
+
   application:
     name: api-gateway
+
+  config:
+    # sino quiero que traiga la configuracion de un servidor de configuracion
+     enable: false
+     import: optional:configserver:instead
 
   cloud:
     gateway:
@@ -14,6 +22,7 @@ spring:
             - Path=/api/usuario/**
           filters:
             - StripPrefix=1  # Esto elimina el prefijo /api/ antes de la solicitud al servicio
+            - AuthFilter # Esto es un filtro personalizado que se encarga de la autenticación
         - id: HOTEL-SERVICE
           uri: lb://HOTEL-SERVICE
           predicates:
@@ -26,6 +35,12 @@ spring:
             - Path=/api/calificacion/**
           filters:
             - StripPrefix=1  # Esto elimina el prefijo /api/ antes de la solicitud al servicio
+        - id: AUTH-SERVER
+          uri: lb://AUTH-SERVER
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1  # Esto elimina el prefijo /api/ antes de la solicitud al servicio
 
 
 eureka:
@@ -36,3 +51,7 @@ eureka:
     register-with-eureka: true
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+logging:
+  level:
+    com.mcsv.api_gateway: DEBUG
