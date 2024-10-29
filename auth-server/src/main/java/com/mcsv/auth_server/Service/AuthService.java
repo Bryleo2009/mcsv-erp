@@ -2,15 +2,17 @@ package com.mcsv.auth_server.Service;
 
 import com.mcsv.auth_server.Config.Exception.ModeloNotFoundException;
 import com.mcsv.auth_server.Dto.AuthUserDto;
-import com.mcsv.auth_server.Dto.RequestDto;
 import com.mcsv.auth_server.Dto.TokenDto;
 import com.mcsv.auth_server.Entity.AuthUser;
 import com.mcsv.auth_server.Repository.AuthUserRepository;
 import com.mcsv.auth_server.Security.JwtProvider;
+import com.mcsv.auth_server.Service.External.IUsuarioService;
+import com.mcsv.usuario_service.Model.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -25,26 +27,29 @@ public class AuthService {
     @Autowired
     private JwtProvider jwtProvider;
 
-    public AuthUser save(AuthUserDto dto){
-        Optional<AuthUser> user = authUserRepository.findByUserName(dto.getUserName());
-        if(user.isPresent()){
-            return null;
+    @Autowired
+    private IUsuarioService usuarioService;
+
+    public Usuario save(Usuario dto){
+        Usuario user = usuarioService.getUsuarioByEmail(dto.getEmail());
+        if(!Objects.isNull(user)){
+            throw new ModeloNotFoundException("Usuario ya existe");
         }
         String password = passwordEncoder.encode(dto.getPassword());
-        AuthUser authUser = AuthUser.builder()
-                .userName(dto.getUserName())
+        Usuario usuario = new Usuario().builder()
+                .email(dto.getEmail())
                 .password(password)
                 .build();
-        return authUserRepository.save(authUser);
+        return usuarioService.saveUsuario(usuario);
     }
 
     public TokenDto login(AuthUserDto dto){
-        Optional<AuthUser> user = authUserRepository.findByUserName(dto.getUserName());
-        if(user.isEmpty()){
+        Usuario user = usuarioService.getUsuarioByEmail(dto.getUserName());
+        if(Objects.isNull(user)){
             throw new ModeloNotFoundException("Usuario no encontrado");
         }
-        if(passwordEncoder.matches(dto.getPassword(),user.get().getPassword())){
-            return new TokenDto(jwtProvider.createToken(user.get()));
+        if(passwordEncoder.matches(dto.getPassword(),user.getPassword())){
+            return new TokenDto(jwtProvider.createToken(user));
         }
         throw new ModeloNotFoundException("Contraseña incorrecta");
     }
@@ -54,7 +59,7 @@ public class AuthService {
             throw new ModeloNotFoundException("Token invalido");
         }
         String userName = jwtProvider.getUserNameFromToken(token);
-        if(authUserRepository.findByUserName(userName).isEmpty()){
+        if(Objects.isNull(usuarioService.getUsuarioByEmail(userName))){
             throw new ModeloNotFoundException("Usuario no encontrado");
         }
         return new TokenDto(token);

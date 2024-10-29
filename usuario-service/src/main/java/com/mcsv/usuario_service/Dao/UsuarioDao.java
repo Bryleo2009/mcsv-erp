@@ -48,7 +48,7 @@ public class UsuarioDao implements IUsuarioService {
 
     @Override
     public Usuario getUsuarioByEmail(String email) {
-        return repo.findByEmail(email);
+       return repo.findByEmail(email);
     }
 
     @Override

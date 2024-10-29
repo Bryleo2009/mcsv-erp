@@ -18,6 +18,7 @@ public class UsuarioController {
     private UsuarioDao usuarioDao;
 
     @PostMapping
+    @Retry(name = "ratingUsuarioBraker" , fallbackMethod = "ratingUsuarioFallback")
     public ResponseEntity<?> saveUsuario(@RequestBody Usuario request) {
         Usuario usuario = usuarioDao.saveUsuario(request);
         return new ResponseEntity<>(usuario, HttpStatus.CREATED);
@@ -36,6 +37,7 @@ public class UsuarioController {
     }
 
     @GetMapping("/email/{email}")
+    @Retry(name = "ratingUsuarioBraker" , fallbackMethod = "ratingUsuarioFallback")
     public ResponseEntity<?> getUsuarioByEmail(@PathVariable String email) {
         Usuario usuario = usuarioDao.getUsuarioByEmail(email);
         return new ResponseEntity<>(usuario, HttpStatus.OK);
@@ -54,7 +56,20 @@ public class UsuarioController {
         return new ResponseEntity<>(usuario, HttpStatus.OK); // Respuesta exitosa
     }
 
+
+    /**
+     * Método de respaldo para el servicio de calificación
+     * @param throwable Excepción lanzada
+     * @return Usuario vacío
+     */
+
     public ResponseEntity<?> ratingUsuarioFallback(int usuarioId, Throwable throwable) {
+        log.warn("Respaldo activado por falla en el servicio"); // Mensaje de advertencia
+        Usuario usuario = new Usuario(); // Crear un objeto vacío
+        return new ResponseEntity<>(usuario, HttpStatus.SERVICE_UNAVAILABLE); // Devolver respuesta de servicio no disponible
+    }
+
+    public ResponseEntity<?> ratingUsuarioFallback(Throwable throwable) {
         log.warn("Respaldo activado por falla en el servicio"); // Mensaje de advertencia
         Usuario usuario = new Usuario(); // Crear un objeto vacío
         return new ResponseEntity<>(usuario, HttpStatus.SERVICE_UNAVAILABLE); // Devolver respuesta de servicio no disponible
