@@ -18,6 +18,7 @@ public class ProductoDto {
     private String nombre;
     private String descripcion;
     private BigDecimal precio;
+    private String codigoSKU;
 
     @JsonIgnore
     public Producto getProducto() {
@@ -26,6 +27,7 @@ public class ProductoDto {
                 .nombre(this.nombre)
                 .descripcion(this.descripcion)
                 .precio(this.precio)
+                .codigoSKU(this.codigoSKU)
                 .build();
     }
 
@@ -36,6 +38,7 @@ public class ProductoDto {
                 .nombre(producto.getNombre())
                 .descripcion(producto.getDescripcion())
                 .precio(producto.getPrecio())
+                .codigoSKU(producto.getCodigoSKU())
                 .build();
     }
 
