@@ -19,6 +19,7 @@
         <module>producto-service</module>
         <module>order-service</module>
         <module>inventario-service</module>
+        <module>eureka-server</module>
     </modules>
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

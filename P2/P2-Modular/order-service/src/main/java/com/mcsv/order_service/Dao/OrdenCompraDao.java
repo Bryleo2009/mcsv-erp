@@ -25,7 +25,7 @@ public class OrdenCompraDao implements IOrdenCompraService {
     private IOrdenCompraRepo repo;
 
     @Autowired
-    private WebClient webClient;
+    private WebClient.Builder webClientBuilder;
 
     @Autowired
     private OrdenCompraDetalleDao ordenCompraDetalleDao;
@@ -69,8 +69,8 @@ public class OrdenCompraDao implements IOrdenCompraService {
         }
 
 
-        InventarioDto[] resp = webClient.post()
-                .uri("http://localhost:8083/inventario/findByCodigoSKU")
+        InventarioDto[] resp = webClientBuilder.build().post()
+                .uri("http://inventario-service/inventario/findByCodigoSKU")
                 .bodyValue(inventarioDtos) // Aquí envías la lista de códigos SKU
                 .retrieve()
                 .bodyToMono(InventarioDto[].class)
