@@ -1,9 +1,8 @@
 package com.mcsv.order_service.Dao;
 
 import com.mcsv.inventario_service.Dto.InventarioDto;
-import com.mcsv.order_service.Config.Exception.ModeloNotFoundException;
+import com.mcsv.order_service.Config.Exception.ExceptionApp;
 import com.mcsv.order_service.Dto.OrdenCompraDto;
-import com.mcsv.order_service.Dto.TipoEstadoDto;
 import com.mcsv.order_service.Model.OrdenCompra;
 import com.mcsv.order_service.Model.OrdenCompraDetalle;
 import com.mcsv.order_service.Repo.IOrdenCompraRepo;
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,7 +41,7 @@ public class OrdenCompraDao implements IOrdenCompraService {
     @Override
     public OrdenCompra findById(String id) {
         log.info("Buscando ordencompra por id: " + id);
-        return repo.findById(id).orElseThrow(() -> new ModeloNotFoundException("OrdenCompra no encontrado"));
+        return repo.findById(id).orElseThrow(() -> new ExceptionApp("OrdenCompra no encontrado"));
     }
 
     @Override
@@ -79,7 +77,7 @@ public class OrdenCompraDao implements IOrdenCompraService {
         System.out.println("InventarioDtos: " + Arrays.toString(resp));
 
         if (resp.length == 0) {
-            throw new ModeloNotFoundException("No se encontraron productos en el inventario con dichos códigos SKU");
+            throw new ExceptionApp("No se encontraron productos en el inventario con dichos códigos SKU");
         }
 
         List<String> sinStock = List.of(resp).stream()
@@ -90,7 +88,7 @@ public class OrdenCompraDao implements IOrdenCompraService {
         System.out.println("Sin stock: " + sinStock);
 
         if (!sinStock.isEmpty()) {
-            throw new ModeloNotFoundException("No hay stock para los siguientes productos: " + sinStock);
+            throw new ExceptionApp("No hay stock para los siguientes productos: " + sinStock);
         }
 
         // Guarda la orden de compra junto con sus detalles en una única operación

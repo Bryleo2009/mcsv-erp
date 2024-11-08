@@ -1,6 +1,6 @@
 package com.mcsv.inventario_service.Controller;
 
-import com.mcsv.inventario_service.Config.Exception.ModeloNotFoundException;
+import com.mcsv.inventario_service.Config.Exception.ExceptionApp;
 import com.mcsv.inventario_service.Dao.InventarioDao;
 import com.mcsv.inventario_service.Dto.InventarioDto;
 import com.mcsv.inventario_service.Model.Inventario;
@@ -37,7 +37,7 @@ public class InventarioController {
     public ResponseEntity<?> getInventario(@PathVariable Long id) {
         Inventario inventario = inventarioDao.findById(id);
         if (Objects.isNull(inventario)) {
-            throw new ModeloNotFoundException("Inventario no encontrado");
+            throw new ExceptionApp("Inventario no encontrado");
         }
         return new ResponseEntity<>( inventario, HttpStatus.OK);
     }
@@ -50,7 +50,7 @@ public class InventarioController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteInventario(@PathVariable Long id) {
         if (Objects.isNull(inventarioDao.findById(id))) {
-            throw new ModeloNotFoundException("Inventario no encontrado");
+            throw new ExceptionApp("Inventario no encontrado");
         }
         inventarioDao.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

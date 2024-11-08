@@ -1,6 +1,6 @@
 package com.mcsv.order_service.Controller;
 
-import com.mcsv.order_service.Config.Exception.ModeloNotFoundException;
+import com.mcsv.order_service.Config.Exception.ExceptionApp;
 import com.mcsv.order_service.Dao.OrdenCompraDetalleDao;
 import com.mcsv.order_service.Dto.OrdenCompraDetalleDto;
 import com.mcsv.order_service.Model.OrdenCompraDetalle;
@@ -33,7 +33,7 @@ public class OrdenCompraDetalleController {
     public ResponseEntity<?> getOrdenCompraDetalle(@PathVariable Long id) {
         OrdenCompraDetalle ordencompradetalle = ordencompradetalleDao.findById(id);
         if (Objects.isNull(ordencompradetalle)) {
-            throw new ModeloNotFoundException("OrdenCompraDetalle no encontrado");
+            throw new ExceptionApp("OrdenCompraDetalle no encontrado");
         }
         return new ResponseEntity<>( ordencompradetalle, HttpStatus.OK);
     }
@@ -46,7 +46,7 @@ public class OrdenCompraDetalleController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteOrdenCompraDetalle(@PathVariable Long id) {
         if (Objects.isNull(ordencompradetalleDao.findById(id))) {
-            throw new ModeloNotFoundException("OrdenCompraDetalle no encontrado");
+            throw new ExceptionApp("OrdenCompraDetalle no encontrado");
         }
         ordencompradetalleDao.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

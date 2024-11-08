@@ -1,6 +1,6 @@
 package com.mcsv.order_service.Dao;
 
-import com.mcsv.order_service.Config.Exception.ModeloNotFoundException;
+import com.mcsv.order_service.Config.Exception.ExceptionApp;
 import com.mcsv.order_service.Dto.TipoEstadoDto;
 import com.mcsv.order_service.Model.TipoEstado;
 import com.mcsv.order_service.Repo.ITipoEstadoRepo;
@@ -31,7 +31,7 @@ public class TipoEstadoDao implements ITipoEstadoService {
     @Override
     public TipoEstado findById(String id) {
         log.info("Buscando tipoestado por id: " + id);
-        return repo.findById(id).orElseThrow(() -> new ModeloNotFoundException("TipoEstado no encontrado"));
+        return repo.findById(id).orElseThrow(() -> new ExceptionApp("TipoEstado no encontrado"));
     }
 
     @Override

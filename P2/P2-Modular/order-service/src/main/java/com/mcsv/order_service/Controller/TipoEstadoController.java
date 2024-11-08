@@ -1,6 +1,6 @@
 package com.mcsv.order_service.Controller;
 
-import com.mcsv.order_service.Config.Exception.ModeloNotFoundException;
+import com.mcsv.order_service.Config.Exception.ExceptionApp;
 import com.mcsv.order_service.Dao.TipoEstadoDao;
 import com.mcsv.order_service.Dto.TipoEstadoDto;
 import com.mcsv.order_service.Model.TipoEstado;
@@ -33,7 +33,7 @@ public class TipoEstadoController {
     public ResponseEntity<?> getTipoEstado(@PathVariable String id) {
         TipoEstado tipoestado = tipoestadoDao.findById(id);
         if (Objects.isNull(tipoestado)) {
-            throw new ModeloNotFoundException("TipoEstado no encontrado");
+            throw new ExceptionApp("TipoEstado no encontrado");
         }
         return new ResponseEntity<>( tipoestado, HttpStatus.OK);
     }
@@ -46,7 +46,7 @@ public class TipoEstadoController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTipoEstado(@PathVariable String id) {
         if (Objects.isNull(tipoestadoDao.findById(id))) {
-            throw new ModeloNotFoundException("TipoEstado no encontrado");
+            throw new ExceptionApp("TipoEstado no encontrado");
         }
         tipoestadoDao.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

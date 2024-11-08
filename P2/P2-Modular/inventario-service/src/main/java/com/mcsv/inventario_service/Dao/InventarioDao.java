@@ -1,6 +1,6 @@
 package com.mcsv.inventario_service.Dao;
 
-import com.mcsv.inventario_service.Config.Exception.ModeloNotFoundException;
+import com.mcsv.inventario_service.Config.Exception.ExceptionApp;
 import com.mcsv.inventario_service.Dto.InventarioDto;
 import com.mcsv.inventario_service.Model.Inventario;
 import com.mcsv.inventario_service.Repo.IInventarioRepo;
@@ -40,7 +40,7 @@ public class InventarioDao implements IInventarioService {
         for(InventarioDto inventarioDto : productos) {
             Inventario inventario = repo.findByCodigoSKU(inventarioDto.getCodigoSKU());
             if(Objects.isNull(inventario)) {
-                throw new ModeloNotFoundException("Inventario no encontrado");
+                throw new ExceptionApp("Inventario no encontrado");
             }
             inventarioDto.setInStock(inStock(inventarioDto.getCodigoSKU(), inventarioDto.getCantidad()));
             inventarios.add(inventarioDto);
@@ -55,7 +55,7 @@ public class InventarioDao implements IInventarioService {
     @Override
     public Inventario findById(Long id) {
         log.info("Buscando inventario por id: " + id);
-        return repo.findById(id).orElseThrow(() -> new ModeloNotFoundException("Inventario no encontrado"));
+        return repo.findById(id).orElseThrow(() -> new ExceptionApp("Inventario no encontrado"));
     }
 
     @Override
@@ -85,7 +85,7 @@ public class InventarioDao implements IInventarioService {
         log.info("Verificando si hay stock para el inventario con codigoSKU: " + codigoSKU);
         Inventario inventario = repo.findByCodigoSKU(codigoSKU);
         if(Objects.isNull(inventario)) {
-            throw new ModeloNotFoundException("Inventario no encontrado");
+            throw new ExceptionApp("Inventario no encontrado");
         }
         return inventario.getCantidad() > 0;
     }
@@ -94,7 +94,7 @@ public class InventarioDao implements IInventarioService {
         log.info("Verificando si hay stock para el inventario con codigoSKU: " + codigoSKU);
         Inventario inventario = repo.findByCodigoSKU(codigoSKU);
         if(Objects.isNull(inventario)) {
-            throw new ModeloNotFoundException("Inventario no encontrado");
+            throw new ExceptionApp("Inventario no encontrado");
         }
         return inventario.getCantidad() >= cantidad;
     }

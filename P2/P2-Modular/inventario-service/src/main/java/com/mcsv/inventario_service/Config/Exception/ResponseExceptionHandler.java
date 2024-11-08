@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.sql.SQLTransientConnectionException;
 import java.util.Date;
+import java.util.UUID;
 
 @ControllerAdvice
 @RestController
@@ -26,12 +27,35 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
 
     HttpStatus status = null;
 
+    // Manejo de errores
+    @ExceptionHandler(ExceptionApp.class)
+    public final ResponseEntity<ExceptionResponse> manejarModeloExcepciones(ExceptionApp ex, WebRequest request) {
+        HttpStatus status = ex.getHttpStatus();
+
+        // Construye el ExceptionResponse incluyendo el requestId y el HttpStatus
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .timestamp(new Date())
+                .mensaje(ex.getMessage())
+                .fallo_en(request.getDescription(false))
+                .status(status.toString())
+                .requestId(UUID.randomUUID().toString())
+                .build();
+
+        return new ResponseEntity<>(exceptionResponse, status);
+    }
+
     // Manejo de errores genéricos
     @ExceptionHandler(Exception.class)
     public final ResponseEntity<ExceptionResponse> manejarTodasExcepciones(Exception ex, WebRequest request) {
         status = HttpStatus.INTERNAL_SERVER_ERROR;
         String detalle = obtenerLineaDeCodigo2(ex);
-        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage() + " - " + detalle, request.getDescription(false), status.toString());
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .status(status.toString())
+                .fallo_en(ex.getMessage() + " - " + detalle)
+                .timestamp(new Date())
+                .mensaje(request.getDescription(false))
+                .requestId(UUID.randomUUID().toString())
+                .build();
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -39,7 +63,14 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
     @ExceptionHandler(InvalidDataAccessResourceUsageException.class)
     public final ResponseEntity<ExceptionResponse> manejarDataExcepciones(InvalidDataAccessResourceUsageException ex, WebRequest request) {
         status = HttpStatus.INTERNAL_SERVER_ERROR;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getCause().getCause().getMessage(), request.getDescription(false), status.toString());
+        String detalle = obtenerLineaDeCodigo2(ex);
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .status(status.toString())
+                .fallo_en(ex.getMessage() + " - " + detalle)
+                .timestamp(new Date())
+                .mensaje(request.getDescription(false))
+                .requestId(UUID.randomUUID().toString())
+                .build();
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -47,67 +78,70 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
     @ExceptionHandler(DataIntegrityViolationException.class)
     public final ResponseEntity<ExceptionResponse> manejarDataVaciaExcepciones(DataIntegrityViolationException ex, WebRequest request) {
         status = HttpStatus.INTERNAL_SERVER_ERROR;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getCause().getCause().getMessage(), request.getDescription(false), status.toString());
+        String detalle = obtenerLineaDeCodigo2(ex);
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .status(status.toString())
+                .fallo_en(ex.getMessage() + " - " + detalle)
+                .timestamp(new Date())
+                .mensaje(request.getDescription(false))
+                .requestId(UUID.randomUUID().toString())
+                .build();
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
     // Manejo de excepciones de transacciones
     @ExceptionHandler(CannotCreateTransactionException.class)
     public final ResponseEntity<ExceptionResponse> manejarDataVaciaExcepciones2(CannotCreateTransactionException ex, WebRequest request) {
-        status = HttpStatus.SERVICE_UNAVAILABLE;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getCause().getCause().getMessage(), request.getDescription(false), status.toString());
-        return new ResponseEntity<>(exceptionResponse, status);
-    }
-
-    // Manejo de errores 404
-    @ExceptionHandler(ModeloNotFoundException.class)
-    public final ResponseEntity<ExceptionResponse> manejarModeloExcepciones(ModeloNotFoundException ex, WebRequest request) {
-        status = HttpStatus.NOT_FOUND;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage(), request.getDescription(false), status.toString());
+        status = HttpStatus.INTERNAL_SERVER_ERROR;
+        //ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getCause().getCause().getMessage(), request.getDescription(false), status.toString());
+        String detalle = obtenerLineaDeCodigo2(ex);
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .status(status.toString())
+                .fallo_en(ex.getMessage() + " - " + detalle)
+                .timestamp(new Date())
+                .mensaje(request.getDescription(false))
+                .requestId(UUID.randomUUID().toString())
+                .build();
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
     // Manejo de excepciones SQL
     @ExceptionHandler(SQLTransientConnectionException.class)
     public final ResponseEntity<ExceptionResponse> handleSQLTransientConnectionException(SQLTransientConnectionException ex, WebRequest request) {
-        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        status = HttpStatus.INTERNAL_SERVER_ERROR;
         String detalle = obtenerLineaDeCodigo2(ex);
-        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage() + " - " + detalle, request.getDescription(false), status.toString());
+        //ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage() + " - " + detalle, request.getDescription(false), status.toString());
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .status(status.toString())
+                .fallo_en(ex.getMessage() + " - " + detalle)
+                .timestamp(new Date())
+                .mensaje(request.getDescription(false))
+                .requestId(UUID.randomUUID().toString())
+                .build();
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
     // Manejo de errores de lectura de mensajes no legibles
     @Override
-    protected ResponseEntity<Object> handleHttpMessageNotReadable(
-            HttpMessageNotReadableException ex,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request) {
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,HttpHeaders headers,HttpStatusCode status,WebRequest request) {
 
         // Cambia el estado a BAD_REQUEST para representar que el mensaje no es legible
-        HttpStatus errorStatus = HttpStatus.BAD_REQUEST;
-
-        // Crear la respuesta de excepción personalizada
-        ExceptionResponse exceptionResponse = new ExceptionResponse(
-                new Date(),
-                "Error al leer el cuerpo de la solicitud: " + ex.getMessage(),
-                request.getDescription(false),
-                errorStatus.toString()
-        );
+        String detalle = obtenerLineaDeCodigo2(ex);
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .status(status.toString())
+                .fallo_en(ex.getMessage() + " - " + detalle)
+                .timestamp(new Date())
+                .mensaje(request.getDescription(false))
+                .requestId(UUID.randomUUID().toString())
+                .build();
 
         // Retorna la respuesta
-        return new ResponseEntity<>(exceptionResponse, errorStatus);
+        return new ResponseEntity<>(exceptionResponse, status);
     }
 
     // Manejo de errores de validación de argumentos
     @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request) {
-
-        HttpStatus errorStatus = HttpStatus.BAD_REQUEST;
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,HttpHeaders headers,HttpStatusCode status,WebRequest request) {
 
         // Crear una cadena de errores detallada
         StringBuilder errores = new StringBuilder();
@@ -119,22 +153,31 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
         }
 
         // Crear la respuesta de excepción personalizada
-        ExceptionResponse exceptionResponse = new ExceptionResponse(
-                new Date(),
-                "Error en los campos: " + errores.toString(),
-                request.getDescription(false),
-                errorStatus.toString()
-        );
+        String detalle = obtenerLineaDeCodigo2(ex);
 
-        return new ResponseEntity<>(exceptionResponse, errorStatus);
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .status(status.toString())
+                .fallo_en("Error en los campos: " + errores.toString() + " - " + detalle)
+                .timestamp(new Date())
+                .mensaje(request.getDescription(false))
+                .requestId(UUID.randomUUID().toString())
+                .build();
+
+        return new ResponseEntity<>(exceptionResponse, status);
     }
 
     // Manejo de NullPointerException
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<Object> manejarNullPointerException(NullPointerException ex, WebRequest request) {
-        String detalle = obtenerLineaDeCodigo(ex);
+        String detalle = obtenerLineaDeCodigo2(ex);
         status = HttpStatus.INTERNAL_SERVER_ERROR;
-        ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), "Se ha producido un error debido a un objeto nulo - Servidor: " + detalle, request.getDescription(false), status.toString());
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .status(status.toString())
+                .fallo_en("Se ha producido un error debido a un objeto nulo - Servidor: " + detalle)
+                .timestamp(new Date())
+                .mensaje(request.getDescription(false))
+                .requestId(UUID.randomUUID().toString())
+                .build();
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -147,14 +190,17 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
     }
 
     private String obtenerLineaDeCodigo2(Exception ex) {
+        String paqueteBase = this.getClass().getPackageName();
+
         StackTraceElement[] stackTrace = ex.getStackTrace();
         if (stackTrace != null) {
             for (StackTraceElement element : stackTrace) {
-                if (element.getClassName().startsWith("com.ofsystem")) {
+                if (element.getClassName().startsWith(paqueteBase)) {
                     return element.toString();
                 }
             }
         }
         return "";
     }
+
 }

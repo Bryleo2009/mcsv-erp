@@ -1,8 +1,7 @@
 package com.mcsv.order_service.Dao;
 
-import com.mcsv.order_service.Config.Exception.ModeloNotFoundException;
+import com.mcsv.order_service.Config.Exception.ExceptionApp;
 import com.mcsv.order_service.Dto.OrdenCompraDetalleDto;
-import com.mcsv.order_service.Model.OrdenCompra;
 import com.mcsv.order_service.Model.OrdenCompraDetalle;
 import com.mcsv.order_service.Repo.IOrdenCompraDetalleRepo;
 import com.mcsv.order_service.Service.IOrdenCompraDetalleService;
@@ -32,7 +31,7 @@ public class OrdenCompraDetalleDao implements IOrdenCompraDetalleService {
     @Override
     public OrdenCompraDetalle findById(Long id) {
         log.info("Buscando ordencompradetalle por id: " + id);
-        return repo.findById(id).orElseThrow(() -> new ModeloNotFoundException("OrdenCompraDetalle no encontrado"));
+        return repo.findById(id).orElseThrow(() -> new ExceptionApp("OrdenCompraDetalle no encontrado"));
     }
 
     @Override
