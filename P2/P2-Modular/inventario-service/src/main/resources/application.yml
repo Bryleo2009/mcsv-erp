@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: inventario-service
+  server:
+    port: 8083
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/inventario-service
+    username: root
+    password: ""
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  logging:
+    level:
+      root: INFO                        # Nivel de logging global
+      com.mcsv.inventario_service: DEBUG # Nivel de logging para el paquete específico
+    file:
+      name: logs/inventario-service.log  # Archivo de logs
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
