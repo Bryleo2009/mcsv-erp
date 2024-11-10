@@ -29,6 +29,13 @@ spring:
           filters:
             - StripPrefix=1  # Esto elimina el prefijo /api/ antes de la solicitud al servicio
 
+  # Punto de entrada para los cliente
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9090/realms/mcsv
+
 eureka:
   instance:
     prefer-ip-address: true
@@ -43,3 +50,6 @@ logging:
     com.mcsv.api_gateway: DEBUG
     org.springframework.cloud.gateway: TRACE
     org.org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: INFO
+
+
+
