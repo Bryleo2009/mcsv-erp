@@ -3,6 +3,7 @@ package com.mcsv.producto_service.Dao;
 import com.mcsv.producto_service.Dto.ProductoDto;
 import com.mcsv.producto_service.Model.Producto;
 import com.mcsv.producto_service.Repo.IProductoRepo;
+import com.mcsv.producto_service.Service.IProductoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,12 +13,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class ProductoDao{
+public class ProductoDao implements IProductoService {
 
     @Autowired
     private IProductoRepo repo;
 
-
+    @Override
     public Producto save(ProductoDto producto) {
         log.info("Guardando producto {}", producto);
         Producto obj = producto.getProducto();
@@ -30,26 +31,26 @@ public class ProductoDao{
         return repo.save(obj);
     }
 
-
+    @Override
     public void delete(String id) {
         log.info("Eliminando producto con id {}", id);
         repo.deleteById(id);
     }
 
-
+    @Override
     public Producto update(ProductoDto dto) {
         log.info("Actualizando producto {}", dto);
         return repo.save(dto.getProducto());
     }
 
-
+    @Override
     public List<ProductoDto> findAll() {
         log.info("Buscando todos los productos");
         List<Producto> productos = repo.findAll();
         return productos.stream().map(ProductoDto::setProducto).collect(Collectors.toList());
     }
 
-
+    @Override
     public Producto findById(String id) {
         log.info("Buscando producto con id {}", id);
         return repo.findById(id).orElse(null);
