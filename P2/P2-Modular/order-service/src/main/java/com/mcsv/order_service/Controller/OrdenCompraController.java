@@ -5,24 +5,45 @@ import com.mcsv.order_service.Config.Exception.ExceptionApp;
 import com.mcsv.order_service.Dao.OrdenCompraDao;
 import com.mcsv.order_service.Dto.OrdenCompraDto;
 import com.mcsv.order_service.Model.OrdenCompra;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/ordencompra")
+@Slf4j
 public class OrdenCompraController {
     @Autowired
     private OrdenCompraDao ordencompraDao;
 
     @PostMapping
-    public ResponseEntity<?> saveOrdenCompra(@RequestBody OrdenCompraDto request) {
-        OrdenCompra ordencompra = ordencompraDao.save(request);
-        return new ResponseEntity<>(ordencompra, HttpStatus.CREATED);
+    @CircuitBreaker(name = "llamadaInventario", fallbackMethod = "llamadaInventarioFuncion")
+    @Retry(name = "llamadaInventario")
+    public ResponseEntity<CompletableFuture<OrdenCompra>> saveOrdenCompra(@RequestBody OrdenCompraDto request) {
+        CompletableFuture<OrdenCompra> ordenCompraFuture = CompletableFuture.supplyAsync(() -> ordencompraDao.save(request));
+        return new ResponseEntity<>(ordenCompraFuture, HttpStatus.CREATED);
     }
+
+    // Método de Fallback para manejar la situación sin inventario-service
+    public ResponseEntity<CompletableFuture<OrdenCompra>> llamadaInventarioFuncion(OrdenCompraDto request, Throwable t) {
+        if (t != null) {
+            log.error("Fallback ejecutado debido a: {}", t.getMessage());
+        } else {
+            log.error("Fallback ejecutado, pero sin detalles de la excepción");
+        }
+        // Devolver una respuesta adecuada en caso de fallo, como 503
+        return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+
 
     @PutMapping
     public ResponseEntity<?> updateOrdenCompra(@RequestBody OrdenCompraDto request) {

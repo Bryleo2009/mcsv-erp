@@ -15,7 +15,8 @@ public class InventarioDto {
     // Campos de la entidad
         private Long id;
     private String codigoSKU;
-    private Integer cantidad;
+    private Integer stock;
+    private Integer stockReal;
     private boolean inStock;
 
     @JsonIgnore
@@ -23,7 +24,8 @@ public class InventarioDto {
         return Inventario.builder()
                                 .id(this.id)
                 .codigoSKU(this.codigoSKU)
-                .cantidad(this.cantidad)
+                .stock(this.stock)
+                .stockReal(this.stockReal)
                 .build();
     }
 
@@ -32,7 +34,8 @@ public class InventarioDto {
         return InventarioDto.builder()
                                 .id(inventario.getId())
                 .codigoSKU(inventario.getCodigoSKU())
-                .cantidad(inventario.getCantidad())
+                .stock(inventario.getStock())
+                .stockReal(inventario.getStockReal())
                 .build();
     }
 }

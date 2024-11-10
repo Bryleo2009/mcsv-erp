@@ -13,4 +13,6 @@ public interface IInventarioService {
     Inventario update(InventarioDto inventario);
     void delete(Long id);
     boolean inStock(String codigoSKU);
+    void disminuirStock(String codigoSKU, Integer cantidad);
+    void confirmarDisminuirStock(String codigoSKU, Integer cantidad, boolean confirmar);
 }

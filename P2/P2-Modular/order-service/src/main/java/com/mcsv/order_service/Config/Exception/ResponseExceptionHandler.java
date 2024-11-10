@@ -59,6 +59,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
+        log.error("Error: " + exceptionResponse.toString());
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -74,6 +75,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
+        log.error("Error: " + exceptionResponse.toString());
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -89,6 +91,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
+        log.error("Error: " + exceptionResponse.toString());
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -105,6 +108,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
+        log.error("Error: " + exceptionResponse.toString());
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -121,6 +125,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
+        log.error("Error: " + exceptionResponse.toString());
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -137,7 +142,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
-
+        log.error("Error: " + exceptionResponse.toString());
         // Retorna la respuesta
         return new ResponseEntity<>(exceptionResponse, status);
     }
@@ -165,7 +170,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
-
+        log.error("Error: " + exceptionResponse.toString());
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -181,6 +186,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
+        log.error("Error: " + exceptionResponse.toString());
         return new ResponseEntity<>(exceptionResponse, status);
     }
 

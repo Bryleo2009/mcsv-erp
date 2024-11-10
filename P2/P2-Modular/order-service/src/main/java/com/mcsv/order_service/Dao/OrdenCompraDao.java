@@ -6,10 +6,12 @@ import com.mcsv.order_service.Dto.OrdenCompraDto;
 import com.mcsv.order_service.Model.OrdenCompra;
 import com.mcsv.order_service.Model.OrdenCompraDetalle;
 import com.mcsv.order_service.Repo.IOrdenCompraRepo;
+import com.mcsv.order_service.Service.External.IInventarioService;
 import com.mcsv.order_service.Service.IOrdenCompraService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.*;
@@ -23,19 +25,22 @@ public class OrdenCompraDao implements IOrdenCompraService {
     private IOrdenCompraRepo repo;
 
     @Autowired
+    private IInventarioService inventarioService;
+
+    @Autowired
     private WebClient.Builder webClientBuilder;
 
     @Autowired
     private OrdenCompraDetalleDao ordenCompraDetalleDao;
 
-     @Override
-     public List<OrdenCompraDto> findAll() {
-         log.info("Buscando todos los ordencompras");
-         List<OrdenCompra> entities = repo.findAll();
-         return entities.stream()
-                 .map(OrdenCompraDto::setOrdenCompra)
-                 .collect(Collectors.toList());
-     }
+    @Override
+    public List<OrdenCompraDto> findAll() {
+        log.info("Buscando todos los ordencompras");
+        List<OrdenCompra> entities = repo.findAll();
+        return entities.stream()
+                .map(OrdenCompraDto::setOrdenCompra)
+                .collect(Collectors.toList());
+    }
 
 
     @Override
@@ -45,6 +50,7 @@ public class OrdenCompraDao implements IOrdenCompraService {
     }
 
     @Override
+    @Transactional
     public OrdenCompra save(OrdenCompraDto ordencompraDto) {
         log.info("Guardando ordencompra");
 
@@ -62,19 +68,12 @@ public class OrdenCompraDao implements IOrdenCompraService {
             new InventarioDto();
             inventarioDtos.add(InventarioDto.builder().
                     codigoSKU(detalle.getCodigoSKU()).
-                    cantidad(detalle.getCantidad()).
+                    stock(detalle.getCantidad()).
                     build());
         }
 
-
-        InventarioDto[] resp = webClientBuilder.build().post()
-                .uri("http://inventario-service/inventario/findByCodigoSKU")
-                .bodyValue(inventarioDtos) // Aquí envías la lista de códigos SKU
-                .retrieve()
-                .bodyToMono(InventarioDto[].class)
-                .block();
-
-        System.out.println("InventarioDtos: " + Arrays.toString(resp));
+        //validacion de stock
+        InventarioDto[] resp = inventarioService.findByCodigoSKU(inventarioDtos).toArray(new InventarioDto[0]);
 
         if (resp.length == 0) {
             throw new ExceptionApp("No se encontraron productos en el inventario con dichos códigos SKU");
@@ -85,10 +84,25 @@ public class OrdenCompraDao implements IOrdenCompraService {
                 .map(InventarioDto::getCodigoSKU)
                 .toList();
 
-        System.out.println("Sin stock: " + sinStock);
 
         if (!sinStock.isEmpty()) {
+            //inventarioDtos - sinStock
+            inventarioDtos = inventarioDtos.stream()
+                    .filter(inventarioDto -> !sinStock.contains(inventarioDto.getCodigoSKU()))
+                    .collect(Collectors.toList());
+            if (!inventarioDtos.isEmpty()) {
+                inventarioService.confirmarDisminuirStock2(inventarioDtos, false);
+            }
             throw new ExceptionApp("No hay stock para los siguientes productos: " + sinStock);
+        } else {
+            for (InventarioDto inventarioDto : inventarioDtos) {
+                try {
+                    inventarioService.confirmarDisminuirStock(inventarioDto, true);
+                } catch (Exception e) {
+                    inventarioService.confirmarDisminuirStock2(inventarioDtos, false);
+                    throw new ExceptionApp("Error al confirmar la disminución de stock");
+                }
+            }
         }
 
         // Guarda la orden de compra junto con sus detalles en una única operación

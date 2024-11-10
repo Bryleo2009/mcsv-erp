@@ -22,5 +22,7 @@ public class Inventario {
     @Size(min=8, message = "El codigoSKU debe tener al menos 8 caracteres")
     private String codigoSKU;
 
-    private Integer cantidad;
+    private Integer stock;
+
+    private Integer stockReal;
 }

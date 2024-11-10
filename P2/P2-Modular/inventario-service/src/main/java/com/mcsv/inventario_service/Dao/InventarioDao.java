@@ -5,6 +5,7 @@ import com.mcsv.inventario_service.Dto.InventarioDto;
 import com.mcsv.inventario_service.Model.Inventario;
 import com.mcsv.inventario_service.Repo.IInventarioRepo;
 import com.mcsv.inventario_service.Service.IInventarioService;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class InventarioDao implements IInventarioService {
      }
 
     @Override
+    @SneakyThrows
     public List<InventarioDto> findByCodigoSKU(List<InventarioDto> productos) {
         log.info("Buscando inventario por codigosSKU" + productos);
 
@@ -42,15 +44,16 @@ public class InventarioDao implements IInventarioService {
             if(Objects.isNull(inventario)) {
                 throw new ExceptionApp("Inventario no encontrado");
             }
-            inventarioDto.setInStock(inStock(inventarioDto.getCodigoSKU(), inventarioDto.getCantidad()));
+            boolean presentaStock = inStock(inventarioDto.getCodigoSKU(), inventarioDto.getStock());
+            if(presentaStock){
+                disminuirStock(inventarioDto.getCodigoSKU(), inventarioDto.getStock());
+            }
+            inventarioDto.setInStock(presentaStock);
             inventarios.add(inventarioDto);
         }
 
         return inventarios;
     }
-
-
-
 
     @Override
     public Inventario findById(Long id) {
@@ -63,6 +66,7 @@ public class InventarioDao implements IInventarioService {
         log.info("Guardando inventario");
 
         Inventario inventario = inventarioDto.getInventario();
+        inventario.setStockReal(inventario.getStock());
         return repo.save(inventario);
     }
 
@@ -87,7 +91,7 @@ public class InventarioDao implements IInventarioService {
         if(Objects.isNull(inventario)) {
             throw new ExceptionApp("Inventario no encontrado");
         }
-        return inventario.getCantidad() > 0;
+        return inventario.getStock() > 0;
     }
 
     public boolean inStock(String codigoSKU, int cantidad) {
@@ -96,6 +100,32 @@ public class InventarioDao implements IInventarioService {
         if(Objects.isNull(inventario)) {
             throw new ExceptionApp("Inventario no encontrado");
         }
-        return inventario.getCantidad() >= cantidad;
+        return inventario.getStock() >= cantidad;
+    }
+
+    @Override
+    public void disminuirStock(String codigoSKU, Integer cantidad) {
+        //se disminuye el stock segun la cantidad al realizar una consulta de stock
+        Inventario inventario = repo.findByCodigoSKU(codigoSKU);
+        if(Objects.isNull(inventario)) {
+            throw new ExceptionApp("Inventario no encontrado");
+        }
+        inventario.setStock(inventario.getStock() - cantidad);
+        repo.save(inventario);
+    }
+
+    @Override
+    public void confirmarDisminuirStock(String codigoSKU, Integer cantidad, boolean confirmar) {
+        //se disminuye el stock real segun la cantidad al confirmar la compra, caso contrario se restablece el stock
+        Inventario inventario = repo.findByCodigoSKU(codigoSKU);
+        if(Objects.isNull(inventario)) {
+            throw new ExceptionApp("Inventario no encontrado");
+        }
+        if(confirmar) {
+            inventario.setStockReal(inventario.getStockReal() - cantidad);
+        } else {
+            inventario.setStock(inventario.getStock() + cantidad);
+        }
+        repo.save(inventario);
     }
 }

@@ -12,31 +12,43 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class ProductoDao {
+public class ProductoDao{
 
     @Autowired
     private IProductoRepo repo;
 
+
     public Producto save(ProductoDto producto) {
         log.info("Guardando producto {}", producto);
-        return repo.save(producto.getProducto());
+        Producto obj = producto.getProducto();
+        obj.setCodigoSKU("SKU"
+                + obj.getNombre().substring(0, 1).toUpperCase()  // Primer carácter del nombre, en mayúsculas
+                + (int) (Math.random() * 1000)  // Número aleatorio de 3 dígitos
+                /*+ "-"
+                + java.time.LocalDate.now().toString().substring(2).replace("-", "")*/ // Fecha actual en formato "YYMMDD"
+        );
+        return repo.save(obj);
     }
+
 
     public void delete(String id) {
         log.info("Eliminando producto con id {}", id);
         repo.deleteById(id);
     }
 
+
     public Producto update(ProductoDto dto) {
         log.info("Actualizando producto {}", dto);
         return repo.save(dto.getProducto());
     }
+
 
     public List<ProductoDto> findAll() {
         log.info("Buscando todos los productos");
         List<Producto> productos = repo.findAll();
         return productos.stream().map(ProductoDto::setProducto).collect(Collectors.toList());
     }
+
 
     public Producto findById(String id) {
         log.info("Buscando producto con id {}", id);

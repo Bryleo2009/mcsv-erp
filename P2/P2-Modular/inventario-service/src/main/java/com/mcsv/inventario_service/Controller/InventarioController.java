@@ -65,4 +65,18 @@ public class InventarioController {
     public ResponseEntity<?> findByCodigoSKU(@RequestBody List<InventarioDto> codigosSKU) {
         return new ResponseEntity<>(inventarioDao.findByCodigoSKU(codigosSKU), HttpStatus.OK);
     }
+
+    @PostMapping("/confirmarDisminuirStock")
+    public ResponseEntity<?> confirmarDisminuirStock(@RequestBody InventarioDto request, @RequestParam boolean confirmar) {
+        inventarioDao.confirmarDisminuirStock(request.getCodigoSKU(), request.getStock(), confirmar);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping("/confirmarDisminuirStock2")
+    public ResponseEntity<?> confirmarDisminuirStock2(@RequestBody List<InventarioDto> request, @RequestParam boolean confirmar) {
+        for (InventarioDto inventarioDto : request) {
+            inventarioDao.confirmarDisminuirStock(inventarioDto.getCodigoSKU(), inventarioDto.getStock(), confirmar);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

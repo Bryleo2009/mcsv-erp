@@ -1,5 +1,6 @@
 package com.mcsv.inventario_service.Config.Exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.http.HttpHeaders;
@@ -22,6 +23,7 @@ import java.util.UUID;
 
 @ControllerAdvice
 @RestController
+@Slf4j
 public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
 
 
@@ -41,6 +43,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .requestId(UUID.randomUUID().toString())
                 .build();
 
+        log.error("Error: " + exceptionResponse.toString());
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -56,6 +59,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
+        log.error("Error: " + exceptionResponse.toString());
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -71,6 +75,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
+        log.error("Error: " + exceptionResponse.toString());
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -86,6 +91,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
+        log.error("Error: " + exceptionResponse.toString());
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -102,6 +108,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
+        log.error("Error: " + exceptionResponse.toString());
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -118,6 +125,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
+        log.error("Error: " + exceptionResponse.toString());
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -134,7 +142,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
-
+        log.error("Error: " + exceptionResponse.toString());
         // Retorna la respuesta
         return new ResponseEntity<>(exceptionResponse, status);
     }
@@ -162,14 +170,14 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
-
+        log.error("Error: " + exceptionResponse.toString());
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
     // Manejo de NullPointerException
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<Object> manejarNullPointerException(NullPointerException ex, WebRequest request) {
-        String detalle = obtenerLineaDeCodigo2(ex);
+        String detalle = obtenerLineaDeCodigo(ex);
         status = HttpStatus.INTERNAL_SERVER_ERROR;
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .status(status.toString())
@@ -178,6 +186,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
                 .mensaje(request.getDescription(false))
                 .requestId(UUID.randomUUID().toString())
                 .build();
+        log.error("Error: " + exceptionResponse.toString());
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
