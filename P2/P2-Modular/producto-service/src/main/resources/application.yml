@@ -1,18 +1,21 @@
+server:
+  port: 8081
+
 spring:
-  application:
-    name: producto-service
-  server:
-    port: 8081
   data:
     mongodb:
-      uri: mongodb://localhost:27017/producto-service
+      uri: mongodb://localhost:27017
+      database: producto-service
 
-  logging:
-    level:
-      root: INFO                       # Nivel de logging global
-      com.mcsv.producto_service: DEBUG # Nivel de logging para el paquete específico
-    file:
-      name: logs/producto-service.log  # Archivo de logs
+  application:
+    name: producto-service
+
+logging:
+  level:
+    root: INFO
+    com.mcsv.producto_service: DEBUG
+  file:
+    name: logs/producto-service.log
 
 eureka:
   client:

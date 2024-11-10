@@ -1,8 +1,10 @@
+server:
+  port: 8082
+
 spring:
   application:
     name: order-service
-  server:
-    port: 8082
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/order-service
@@ -14,12 +16,12 @@ spring:
   main:
     allow-bean-definition-overriding: true
 
-  logging:
-    level:
-      root: INFO
-      com.mcsv.order_service: DEBUG
-    file:
-      name: logs/order-service.log
+logging:
+  level:
+    root: INFO
+    com.mcsv.order_service: DEBUG
+  file:
+    name: logs/order-service.log
 
 eureka:
   client:
