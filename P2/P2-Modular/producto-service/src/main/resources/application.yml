@@ -7,6 +7,10 @@ spring:
       uri: mongodb://localhost:27017
       database: producto-service
 
+  ## AL implementear el inventario-service, y este es MySQL. Me genera error que se soluciona con la siguiente linea
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
   application:
     name: producto-service
 

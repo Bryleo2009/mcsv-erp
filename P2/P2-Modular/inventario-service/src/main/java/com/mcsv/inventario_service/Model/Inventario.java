@@ -25,4 +25,7 @@ public class Inventario {
     private Integer stock;
 
     private Integer stockReal;
+
+    @Transient
+    private boolean inStock;
 }

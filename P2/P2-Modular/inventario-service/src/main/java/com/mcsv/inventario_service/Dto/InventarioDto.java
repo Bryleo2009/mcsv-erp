@@ -26,6 +26,7 @@ public class InventarioDto {
                 .codigoSKU(this.codigoSKU)
                 .stock(this.stock)
                 .stockReal(this.stockReal)
+                .inStock(this.inStock)
                 .build();
     }
 
@@ -36,6 +37,7 @@ public class InventarioDto {
                 .codigoSKU(inventario.getCodigoSKU())
                 .stock(inventario.getStock())
                 .stockReal(inventario.getStockReal())
+                .inStock(inventario.isInStock())
                 .build();
     }
 }

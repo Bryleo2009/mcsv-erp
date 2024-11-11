@@ -1,6 +1,10 @@
 package com.mcsv.producto_service.Config.Exception;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.util.StringUtil;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +23,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.sql.SQLTransientConnectionException;
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 @ControllerAdvice
@@ -50,16 +55,61 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
     // Manejo de errores genéricos
     @ExceptionHandler(Exception.class)
     public final ResponseEntity<ExceptionResponse> manejarTodasExcepciones(Exception ex, WebRequest request) {
-        status = HttpStatus.INTERNAL_SERVER_ERROR;
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         String detalle = obtenerLineaDeCodigo2(ex);
+
+        String mensajeBase = "";
+        if(StringUtils.isNotBlank(detalle)){
+            mensajeBase = ex.getMessage() + " - " + detalle;
+        } else {
+            mensajeBase = ex.getMessage();
+        }
+
+        // Crear la respuesta de la excepción con los datos básicos
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .status(status.toString())
-                .fallo_en(ex.getMessage() + " - " + detalle)
+                .fallo_en(request.getDescription(false))
                 .timestamp(new Date())
-                .mensaje(request.getDescription(false))
+                .mensaje(mensajeBase)
                 .requestId(UUID.randomUUID().toString())
                 .build();
+
+        // Obtener el mensaje
+        String mensaje = exceptionResponse.getMensaje();
+
+        // Verificar si el mensaje contiene un JSON en su interior
+        if (mensaje != null && mensaje.contains("[{") && mensaje.contains("}]")) {
+            try {
+                // Intentar extraer el JSON contenido en el mensaje
+                int startIndex = mensaje.indexOf("[{");
+                int endIndex = mensaje.lastIndexOf("}]");
+
+                // Si encontramos la porción JSON, intentamos parsearlo
+                if (startIndex != -1 && endIndex != -1) {
+                    String jsonPart = mensaje.substring(startIndex, endIndex + 2);  // Obtener la cadena JSON
+
+                    // Usamos ObjectMapper para parsear el JSON
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    JsonNode rootNode = objectMapper.readTree(jsonPart);  // Parsear la parte del JSON
+
+                    // Verificar si existe un campo "mensaje" en el JSON y extraerlo
+                    if (rootNode.isArray() && rootNode.size() > 0) {
+                        JsonNode jsonNode = rootNode.get(0);  // Obtener el primer objeto del array
+                        if (jsonNode.has("mensaje")) {
+                            String subMensaje = jsonNode.get("mensaje").asText();
+                            exceptionResponse.setMensaje(subMensaje);  // Establecer solo el submensaje
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error al procesar el mensaje JSON: {}", e.getMessage());
+            }
+        }
+
+        // Loguear el error
         log.error("Error: " + exceptionResponse.toString());
+
+        // Devolver la respuesta con el submensaje procesado
         return new ResponseEntity<>(exceptionResponse, status);
     }
 
@@ -70,9 +120,9 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
         String detalle = obtenerLineaDeCodigo2(ex);
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .status(status.toString())
-                .fallo_en(ex.getMessage() + " - " + detalle)
+                .fallo_en(request.getDescription(false))
                 .timestamp(new Date())
-                .mensaje(request.getDescription(false))
+                .mensaje(ex.getMessage() + " - " + detalle)
                 .requestId(UUID.randomUUID().toString())
                 .build();
         log.error("Error: " + exceptionResponse.toString());
@@ -86,9 +136,9 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
         String detalle = obtenerLineaDeCodigo2(ex);
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .status(status.toString())
-                .fallo_en(ex.getMessage() + " - " + detalle)
+                .fallo_en(request.getDescription(false))
                 .timestamp(new Date())
-                .mensaje(request.getDescription(false))
+                .mensaje(ex.getMessage() + " - " + detalle)
                 .requestId(UUID.randomUUID().toString())
                 .build();
         log.error("Error: " + exceptionResponse.toString());
@@ -103,9 +153,9 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
         String detalle = obtenerLineaDeCodigo2(ex);
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .status(status.toString())
-                .fallo_en(ex.getMessage() + " - " + detalle)
+                .fallo_en(request.getDescription(false))
                 .timestamp(new Date())
-                .mensaje(request.getDescription(false))
+                .mensaje(ex.getMessage() + " - " + detalle)
                 .requestId(UUID.randomUUID().toString())
                 .build();
         log.error("Error: " + exceptionResponse.toString());
@@ -120,9 +170,9 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
         //ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(), ex.getMessage() + " - " + detalle, request.getDescription(false), status.toString());
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .status(status.toString())
-                .fallo_en(ex.getMessage() + " - " + detalle)
+                .fallo_en(request.getDescription(false))
                 .timestamp(new Date())
-                .mensaje(request.getDescription(false))
+                .mensaje(ex.getMessage() + " - " + detalle)
                 .requestId(UUID.randomUUID().toString())
                 .build();
         log.error("Error: " + exceptionResponse.toString());
@@ -137,9 +187,9 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
         String detalle = obtenerLineaDeCodigo2(ex);
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .status(status.toString())
-                .fallo_en(ex.getMessage() + " - " + detalle)
+                .fallo_en(request.getDescription(false))
                 .timestamp(new Date())
-                .mensaje(request.getDescription(false))
+                .mensaje(ex.getMessage() + " - " + detalle)
                 .requestId(UUID.randomUUID().toString())
                 .build();
         log.error("Error: " + exceptionResponse.toString());
@@ -165,9 +215,9 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
 
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .status(status.toString())
-                .fallo_en("Error en los campos: " + errores.toString() + " - " + detalle)
+                .fallo_en(request.getDescription(false))
                 .timestamp(new Date())
-                .mensaje(request.getDescription(false))
+                .mensaje("Error en los campos: " + errores.toString() + " - " + detalle)
                 .requestId(UUID.randomUUID().toString())
                 .build();
         log.error("Error: " + exceptionResponse.toString());
@@ -177,13 +227,13 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler{
     // Manejo de NullPointerException
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<Object> manejarNullPointerException(NullPointerException ex, WebRequest request) {
-        String detalle = obtenerLineaDeCodigo2(ex);
+        String detalle = obtenerLineaDeCodigo(ex);
         status = HttpStatus.INTERNAL_SERVER_ERROR;
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .status(status.toString())
-                .fallo_en("Se ha producido un error debido a un objeto nulo - Servidor: " + detalle)
+                .fallo_en(request.getDescription(false))
                 .timestamp(new Date())
-                .mensaje(request.getDescription(false))
+                .mensaje("Se ha producido un error debido a un objeto nulo - Servidor: " + detalle)
                 .requestId(UUID.randomUUID().toString())
                 .build();
         log.error("Error: " + exceptionResponse.toString());

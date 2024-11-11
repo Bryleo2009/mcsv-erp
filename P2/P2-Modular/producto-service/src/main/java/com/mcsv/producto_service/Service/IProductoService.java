@@ -10,5 +10,5 @@ public interface IProductoService {
     void delete(String id);
     Producto update(ProductoDto dto);
     List<ProductoDto> findAll();
-    Producto findById(String id);
+    ProductoDto findById(String id);
 }

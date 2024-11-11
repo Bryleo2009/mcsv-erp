@@ -1,7 +1,6 @@
-package com.mcsv.order_service.Service.External;
+package com.mcsv.producto_service.Service.External;
 
 import com.mcsv.inventario_service.Dto.InventarioDto;
-import com.mcsv.inventario_service.Model.Inventario;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +15,9 @@ public interface IInventarioService {
 
     String url = "/inventario";
 
+    @PostMapping(url)
+    void saveInventario(@RequestBody InventarioDto request);
+
     /**
      * Busca un inventario por su codigoSKU, y disminuye el stock en caso de que haya suficiente
      * @param codigosSKU lista de productos a buscar
@@ -23,12 +25,6 @@ public interface IInventarioService {
     @PostMapping(url+"/findByCodigoSKU")
     List<InventarioDto> findByCodigoSKU(@RequestBody List<InventarioDto> codigosSKU);
 
-    @PutMapping(url)
-    Inventario updateInventario(@RequestBody InventarioDto request);
-
-    @PostMapping(url+"/confirmarDisminuirStock")
-    void confirmarDisminuirStock(@RequestBody InventarioDto request, @RequestParam boolean confirmar);
-
-    @PostMapping(url+"/confirmarDisminuirStock2")
-    void confirmarDisminuirStock2(@RequestBody List<InventarioDto> request, @RequestParam boolean confirmar);
 }
+
+
