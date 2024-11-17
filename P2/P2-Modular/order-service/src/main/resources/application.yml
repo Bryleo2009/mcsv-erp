@@ -49,3 +49,7 @@ resilience4j:
         max-attempts: 3 # Cantidad de reintentos
         wait-duration: 5s # Tiempo de espera entre reintentos
 
+management:
+  tracing:
+    sampling:
+      probability: 1.0

@@ -2,6 +2,7 @@ package com.mcsv.inventario_service.Dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mcsv.inventario_service.Model.Inventario;
+import io.micrometer.tracing.Span;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -40,4 +41,5 @@ public class InventarioDto {
                 .inStock(inventario.isInStock())
                 .build();
     }
+
 }

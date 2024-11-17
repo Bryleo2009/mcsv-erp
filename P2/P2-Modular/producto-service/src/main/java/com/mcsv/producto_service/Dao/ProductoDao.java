@@ -7,6 +7,9 @@ import com.mcsv.producto_service.Model.Producto;
 import com.mcsv.producto_service.Repo.IProductoRepo;
 import com.mcsv.producto_service.Service.External.IInventarioService;
 import com.mcsv.producto_service.Service.IProductoService;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
+import io.micrometer.tracing.exporter.FinishedSpan;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +29,9 @@ public class ProductoDao implements IProductoService {
     @Autowired
     private IInventarioService inventarioService;
 
+    @Autowired
+    private Tracer tracer;
+
     @Override
     public Producto save(ProductoDto producto) {
         log.info("Guardando producto {}", producto);
@@ -37,7 +43,13 @@ public class ProductoDao implements IProductoService {
                 + java.time.LocalDate.now().toString().substring(2).replace("-", "")*/ // Fecha actual en formato "YYMMDD"
         );
         new InventarioDto();
-        inventarioService.saveInventario(InventarioDto.builder().codigoSKU(obj.getCodigoSKU()).stock(obj.getStock()).build());
+        Span span = tracer.nextSpan().name("inventarioService.saveInventario | save").start();
+        try (Tracer.SpanInScope ws = tracer.withSpan(span.start())) {
+            inventarioService.saveInventario(InventarioDto.builder().codigoSKU(obj.getCodigoSKU()).stock(obj.getStock()).build());
+        } finally {
+            log.info("Trace id: {}", span.context().traceId());
+            span.end();
+        }
         return repo.save(obj);
     }
 
@@ -57,14 +69,23 @@ public class ProductoDao implements IProductoService {
     public List<ProductoDto> findAll() {
         log.info("Buscando todos los productos");
         List<Producto> productos = repo.findAll();
-        for (Producto producto : productos) {
-            InventarioDto inventario = inventarioService.findByCodigoSKU(List.of(
-                    InventarioDto.builder()
-                            .codigoSKU(producto.getCodigoSKU())
-                            .stock(0).build()
-            )).get(0);
-            producto.setStock(inventario.getStock());
+
+        Span span = tracer.nextSpan().name("inventarioService.findByCodigoSKU | findAll");
+        try (Tracer.SpanInScope ws = tracer.withSpan(span.start())) {
+            for (Producto producto : productos) {
+                InventarioDto inventario = inventarioService.findByCodigoSKU(List.of(
+                        InventarioDto.builder()
+                                .codigoSKU(producto.getCodigoSKU())
+                                .stock(0)
+                                .build()
+                )).get(0);
+                producto.setStock(inventario.getStock());
+            }
+        } finally {
+            log.info("Trace id: {}", span.context().traceId());
+            span.end();
         }
+
         return productos.stream().map(ProductoDto::setProducto).collect(Collectors.toList());
     }
 
@@ -72,17 +93,25 @@ public class ProductoDao implements IProductoService {
     public ProductoDto findById(String id) {
         log.info("Buscando producto con id {}", id);
         Producto producto = repo.findById(id).orElse(null);
-        if (Objects.nonNull(producto)) {
-            InventarioDto inventario = inventarioService.findByCodigoSKU(List.of(
-                    InventarioDto.builder()
-                            .codigoSKU(producto.getCodigoSKU())
-                            .stock(0).build()
-            )).get(0);
-            producto.setStock(inventario.getStock());
-            new ProductoDto();
-            return ProductoDto.setProducto(producto);
-        } else {
-            throw new ExceptionApp("Producto no encontrado", HttpStatus.NOT_FOUND);
+
+        Span span = tracer.nextSpan().name("inventarioService.findByCodigoSKU | findById");
+        try (Tracer.SpanInScope ws = tracer.withSpan(span.start())) {
+            if (Objects.nonNull(producto)) {
+                InventarioDto inventario = inventarioService.findByCodigoSKU(List.of(
+                        InventarioDto.builder()
+                                .codigoSKU(producto.getCodigoSKU())
+                                .stock(0)
+                                .build()
+                )).get(0);
+                producto.setStock(inventario.getStock());
+                new ProductoDto();
+                return ProductoDto.setProducto(producto);
+            } else {
+                throw new ExceptionApp("Producto no encontrado", HttpStatus.NOT_FOUND);
+            }
+        } finally {
+            log.info("Trace id: {}", span.context().traceId());
+            span.end();
         }
     }
 }

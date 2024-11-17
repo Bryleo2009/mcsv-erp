@@ -4,6 +4,9 @@ import com.mcsv.inventario_service.Config.Exception.ExceptionApp;
 import com.mcsv.inventario_service.Dao.InventarioDao;
 import com.mcsv.inventario_service.Dto.InventarioDto;
 import com.mcsv.inventario_service.Model.Inventario;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.TraceContext;
+import io.micrometer.tracing.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +23,8 @@ public class InventarioController {
     private static final Logger log = LoggerFactory.getLogger(InventarioController.class);
     @Autowired
     private InventarioDao inventarioDao;
+    @Autowired
+    private Tracer tracer;
 
     @PostMapping
     public ResponseEntity<?> saveInventario(@RequestBody InventarioDto request) {

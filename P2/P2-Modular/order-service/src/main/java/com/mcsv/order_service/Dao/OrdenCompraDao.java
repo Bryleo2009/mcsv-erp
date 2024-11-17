@@ -8,6 +8,8 @@ import com.mcsv.order_service.Model.OrdenCompraDetalle;
 import com.mcsv.order_service.Repo.IOrdenCompraRepo;
 import com.mcsv.order_service.Service.External.IInventarioService;
 import com.mcsv.order_service.Service.IOrdenCompraService;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,10 +30,8 @@ public class OrdenCompraDao implements IOrdenCompraService {
     private IInventarioService inventarioService;
 
     @Autowired
-    private WebClient.Builder webClientBuilder;
+    private Tracer tracer;
 
-    @Autowired
-    private OrdenCompraDetalleDao ordenCompraDetalleDao;
 
     @Override
     public List<OrdenCompraDto> findAll() {
@@ -65,49 +65,60 @@ public class OrdenCompraDao implements IOrdenCompraService {
 
         List<InventarioDto> inventarioDtos = new ArrayList<>();
         for (OrdenCompraDetalle detalle : detalles) {
-            new InventarioDto();
             inventarioDtos.add(InventarioDto.builder().
                     codigoSKU(detalle.getCodigoSKU()).
                     stock(detalle.getCantidad()).
                     build());
         }
 
-        //validacion de stock
-        InventarioDto[] resp = inventarioService.findByCodigoSKU(inventarioDtos).toArray(new InventarioDto[0]);
-
-        if (resp.length == 0) {
-            throw new ExceptionApp("No se encontraron productos en el inventario con dichos códigos SKU");
-        }
-
-        List<String> sinStock = List.of(resp).stream()
-                .filter(inventarioDto -> !inventarioDto.isInStock())
-                .map(InventarioDto::getCodigoSKU)
-                .toList();
+        // Obtener el span actual (si existe) para propagar el parentId
+        Span span1 = tracer.nextSpan().name("inventarioService.findByCodigoSKU | save");
 
 
-        if (!sinStock.isEmpty()) {
-            //inventarioDtos - sinStock
-            inventarioDtos = inventarioDtos.stream()
-                    .filter(inventarioDto -> !sinStock.contains(inventarioDto.getCodigoSKU()))
-                    .collect(Collectors.toList());
-            if (!inventarioDtos.isEmpty()) {
-                inventarioService.confirmarDisminuirStock2(inventarioDtos, false);
+        try (Tracer.SpanInScope ws1 = tracer.withSpan(span1)) {
+            // Realizamos la validación de stock
+            InventarioDto[] resp = inventarioService.findByCodigoSKU(inventarioDtos).toArray(new InventarioDto[0]);
+
+            if (resp.length == 0) {
+                throw new ExceptionApp("No se encontraron productos en el inventario con dichos códigos SKU");
             }
-            throw new ExceptionApp("No hay stock para los siguientes productos: " + sinStock);
-        } else {
-            for (InventarioDto inventarioDto : inventarioDtos) {
-                try {
-                    inventarioService.confirmarDisminuirStock(inventarioDto, true);
-                } catch (Exception e) {
-                    inventarioService.confirmarDisminuirStock2(inventarioDtos, false);
-                    throw new ExceptionApp("Error al confirmar la disminución de stock");
+
+            List<String> sinStock = List.of(resp).stream()
+                    .filter(inventarioDto -> !inventarioDto.isInStock())
+                    .map(InventarioDto::getCodigoSKU)
+                    .toList();
+
+            if (!sinStock.isEmpty()) {
+                // Filtramos los inventarios que no tienen stock
+                inventarioDtos = inventarioDtos.stream()
+                        .filter(inventarioDto -> !sinStock.contains(inventarioDto.getCodigoSKU()))
+                        .collect(Collectors.toList());
+
+                if (!inventarioDtos.isEmpty()) {
+                    // Procesar la disminución de stock
+                    inventarioService.confirmarDisminuirStock2(inventarioDtos, true);
+
+                }
+                throw new ExceptionApp("No hay stock para los siguientes productos: " + sinStock);
+            } else {
+                // Si todo tiene stock, confirmamos la disminución de stock
+                for (InventarioDto inventarioDto : inventarioDtos) {
+                        inventarioService.confirmarDisminuirStock(inventarioDto, true);
                 }
             }
+        } catch (Exception e) {
+            inventarioService.confirmarDisminuirStock2(inventarioDtos, false);
+            throw new ExceptionApp("Error al confirmar la disminución de stock");
+        } finally {
+            log.info("Trace id: {}", span1.context().traceId());
+            span1.end();  // Finalizamos el primer span en el bloque finally para asegurarnos de que se cierre
         }
 
         // Guarda la orden de compra junto con sus detalles en una única operación
         return repo.save(ordencompra);
     }
+
+
 
 
     @Override

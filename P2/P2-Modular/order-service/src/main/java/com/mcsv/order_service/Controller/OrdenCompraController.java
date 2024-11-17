@@ -8,6 +8,8 @@ import com.mcsv.order_service.Model.OrdenCompra;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,13 +26,26 @@ public class OrdenCompraController {
     @Autowired
     private OrdenCompraDao ordencompraDao;
 
+    @Autowired
+    private Tracer tracer;
+
+
     @PostMapping
     @CircuitBreaker(name = "llamadaInventario", fallbackMethod = "llamadaInventarioFuncion")
     @Retry(name = "llamadaInventario")
     public ResponseEntity<CompletableFuture<OrdenCompra>> saveOrdenCompra(@RequestBody OrdenCompraDto request) {
-        CompletableFuture<OrdenCompra> ordenCompraFuture = CompletableFuture.supplyAsync(() -> ordencompraDao.save(request));
+        Span currentSpan = tracer.currentSpan();
+
+        CompletableFuture<OrdenCompra> ordenCompraFuture = CompletableFuture.supplyAsync(() -> {
+            // Aquí propagamos el contexto del span actual a la tarea asincrónica
+            try (Tracer.SpanInScope ws = tracer.withSpan(currentSpan)) {
+                return ordencompraDao.save(request);  // El método de servicio ahora está dentro del contexto del trace
+            }
+        });
+
         return new ResponseEntity<>(ordenCompraFuture, HttpStatus.CREATED);
     }
+
 
     // Método de Fallback para manejar la situación sin inventario-service
     public ResponseEntity<CompletableFuture<OrdenCompra>> llamadaInventarioFuncion(OrdenCompraDto request, Throwable t) {
