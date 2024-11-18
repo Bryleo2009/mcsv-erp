@@ -3,6 +3,7 @@ package com.mcsv.order_service.Dao;
 import com.mcsv.inventario_service.Dto.InventarioDto;
 import com.mcsv.order_service.Config.Exception.ExceptionApp;
 import com.mcsv.order_service.Dto.OrdenCompraDto;
+import com.mcsv.order_service.Event.OrderEvent;
 import com.mcsv.order_service.Model.OrdenCompra;
 import com.mcsv.order_service.Model.OrdenCompraDetalle;
 import com.mcsv.order_service.Repo.IOrdenCompraRepo;
@@ -12,6 +13,7 @@ import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -22,6 +24,9 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class OrdenCompraDao implements IOrdenCompraService {
+
+    @Autowired
+    private KafkaTemplate<String, OrderEvent> kafkaTemplate;
 
     @Autowired
     private IOrdenCompraRepo repo;
@@ -114,8 +119,11 @@ public class OrdenCompraDao implements IOrdenCompraService {
             span1.end();  // Finalizamos el primer span en el bloque finally para asegurarnos de que se cierre
         }
 
+        OrdenCompra nuevaOrdenCompra = repo.save(ordencompra);
+        kafkaTemplate.send("notificationTopic", new OrderEvent(nuevaOrdenCompra.getNumeroOrden()));
+
         // Guarda la orden de compra junto con sus detalles en una única operación
-        return repo.save(ordencompra);
+        return nuevaOrdenCompra;
     }
 
 

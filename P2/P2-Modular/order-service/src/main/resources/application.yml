@@ -5,6 +5,22 @@ spring:
   application:
     name: order-service
 
+  # Configuración de Kafka
+  kafka:
+    bootstrap-servers: localhost:9092
+    template:
+      default-topic: notificationTopic
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring:
+          json:
+            type:
+              mapping: event:com.mcsv.order_service.Event.OrderEvent # Clase de evento
+
+
+  # Configuración de la base de datos
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/order-service
@@ -49,6 +65,7 @@ resilience4j:
         max-attempts: 3 # Cantidad de reintentos
         wait-duration: 5s # Tiempo de espera entre reintentos
 
+# Configuración de Zipkin
 management:
   tracing:
     sampling:
